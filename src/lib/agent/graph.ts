@@ -9,7 +9,6 @@ import {
 import type {
   ChatMessage,
   Plan,
-  PlanTask,
   TaskResult,
   FindCustomerResult,
   UpdateLedgerResult,
@@ -48,9 +47,15 @@ type AgentStateType = typeof AgentState.State;
 // ============================================
 
 function getLLM() {
+  const apiKey = process.env.OPENAI_API_KEY;
   return new ChatOpenAI({
-    modelName: "gpt-4o",
+    modelName: process.env.OPENAI_MODEL || "gpt-4o",
     temperature: 0.1,
+    apiKey: apiKey,
+    openAIApiKey: apiKey,
+    configuration: {
+      baseURL: process.env.OPENAI_BASE_URL,
+    },
   });
 }
 
