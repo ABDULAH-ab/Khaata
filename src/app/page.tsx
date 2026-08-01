@@ -1,62 +1,50 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+"use client";
+
+import { useState } from "react";
+import { ChatPanel } from "@/components/chat-panel";
+import { LedgerPanel } from "@/components/ledger-panel";
 
 export default function Home() {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  const handleLedgerUpdate = () => {
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-6 py-12">
-      {/* Glow effect */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center gap-8 max-w-2xl text-center">
-        {/* Status badge */}
-        <Badge variant="secondary" className="px-4 py-1.5 text-sm font-medium">
-          🚧 Under Construction
-        </Badge>
-
-        {/* Logo / Title */}
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl">
-              📒
-            </div>
-            <h1 className="text-4xl font-bold tracking-tight">
+    <div className="flex flex-col h-screen overflow-hidden">
+      {/* Top bar */}
+      <header className="flex items-center justify-between px-5 py-3 border-b border-border/50 bg-background/80 backdrop-blur-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-base">
+            📒
+          </div>
+          <div>
+            <h1 className="text-sm font-bold tracking-tight">
               Khata Assistant
             </h1>
+            <p className="text-[11px] text-muted-foreground">
+              AI-powered ledger for shopkeepers
+            </p>
           </div>
-          <p className="text-lg text-muted-foreground max-w-md leading-relaxed">
-            AI-powered ledger for shopkeepers. Turn natural language into
-            accurate credit tracking.
-          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[11px] text-muted-foreground">Online</span>
+        </div>
+      </header>
+
+      {/* Two-panel layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left panel: Chat */}
+        <div className="w-1/2 border-r border-border/50 flex flex-col overflow-hidden">
+          <ChatPanel onLedgerUpdate={handleLedgerUpdate} />
         </div>
 
-        {/* Feature pills */}
-        <div className="flex flex-wrap justify-center gap-2">
-          {[
-            "Natural Language Input",
-            "Smart Ledger Updates",
-            "Overdue Alerts",
-            "Multi-Transaction Parsing",
-          ].map((feature) => (
-            <span
-              key={feature}
-              className="px-3 py-1 text-xs font-medium rounded-full bg-muted text-muted-foreground border border-border"
-            >
-              {feature}
-            </span>
-          ))}
+        {/* Right panel: Ledger */}
+        <div className="w-1/2 flex flex-col overflow-hidden">
+          <LedgerPanel refreshTrigger={refreshTrigger} />
         </div>
-
-        {/* CTA */}
-        <Button size="lg" disabled className="mt-4">
-          Coming Soon
-        </Button>
-
-        {/* Tech stack footer */}
-        <p className="text-xs text-muted-foreground/60 mt-8">
-          Built with Next.js · Supabase · LangGraph · shadcn/ui
-        </p>
       </div>
     </div>
   );
