@@ -51,7 +51,7 @@ type AgentStateType = typeof AgentState.State;
 function getLLM() {
   const apiKey = process.env.OPENAI_API_KEY;
   return new ChatOpenAI({
-    modelName: process.env.OPENAI_MODEL || "gpt-4o",
+    modelName: process.env.OPENAI_MODEL || "openai/gpt-oss-120b",
     temperature: 0.1,
     apiKey: apiKey,
     openAIApiKey: apiKey,
