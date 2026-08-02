@@ -47,6 +47,12 @@ export interface CreateCustomerResult {
   error?: string;
 }
 
+export interface DeleteCustomerResult {
+  status: "success" | "error";
+  customerName?: string;
+  error?: string;
+}
+
 // Agent types
 export interface PlanTask {
   id: number;
@@ -55,6 +61,7 @@ export interface PlanTask {
     | "update_ledger"
     | "get_overdue_customers"
     | "create_customer"
+    | "delete_customer"
     | "clarify";
   args: Record<string, unknown>;
   dependsOn?: number;
@@ -69,7 +76,12 @@ export interface Plan {
 export interface TaskResult {
   taskId: number;
   toolName: string;
-  result: FindCustomerResult | UpdateLedgerResult | OverdueCustomerResult | CreateCustomerResult;
+  result:
+    | FindCustomerResult
+    | UpdateLedgerResult
+    | OverdueCustomerResult
+    | CreateCustomerResult
+    | DeleteCustomerResult;
 }
 
 export interface ChatMessage {

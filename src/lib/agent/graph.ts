@@ -5,6 +5,7 @@ import {
   updateLedger,
   getOverdueCustomers,
   createCustomer,
+  deleteCustomer,
 } from "@/lib/tools";
 import type {
   ChatMessage,
@@ -14,6 +15,7 @@ import type {
   UpdateLedgerResult,
   OverdueCustomerResult,
   CreateCustomerResult,
+  DeleteCustomerResult,
   Customer,
 } from "@/lib/types";
 
@@ -63,7 +65,9 @@ function getLLM() {
 // SYSTEM PROMPT (from plan.md §6)
 // ============================================
 
-const SYSTEM_PROMPT = `You are a ledger assistant for a small shop owner (khata/tab system). Customers buy on credit and pay it off later. Your job is to accurately record what the shopkeeper tells you in plain language, using your tools — never update balances without calling a tool. If a customer name is ambiguous, ask before acting. If someone says they "paid off" or "cleared" their tab, look up their current balance first and record a payment for that exact amount. Always confirm back what you recorded in plain language.
+const SYSTEM_PROMPT = `You are a ledger assistant for a small shop owner (khata/tab system). Customers buy on credit and pay it off later. You understand both English and Roman Urdu / Urdu casual shop talk (e.g. "record delete krdo", "system se remove krna hai", "hata do", "khata clear krdo", "took milk 150", "paid 200"). Your job is to accurately record what the shopkeeper tells you in plain language, using your tools — never update or delete records without calling a tool.
+
+If a customer name is ambiguous, ask before acting. If someone says they "paid off" or "cleared" their tab, look up their current balance first and record a payment for that exact amount. If someone asks to remove/delete a customer from the system, use delete_customer. Always confirm back what you did in plain, friendly language.
 
 You work in Rupees (Rs.) as the currency.`;
 
@@ -78,25 +82,31 @@ async function plannerNode(
 
   const plannerPrompt = `${SYSTEM_PROMPT}
 
-You are the PLANNER. Your job is to analyze the user's message and break it down into an ordered list of tasks.
+You are the PLANNER. Your job is to analyze the user's message alongside the conversation history and break it down into an ordered list of tasks.
 
 Available tools:
 1. find_customer(name) — look up a customer by name
 2. update_ledger(customer_id, type, amount, description, raw_input) — record a charge or payment
 3. get_overdue_customers(days_threshold) — find customers with overdue balances
 4. create_customer(name) — create a new customer
-5. clarify(question) — ask the user a clarifying question
+5. delete_customer(customer_id) — permanently remove a customer and their records from the system
+6. clarify(question) — ask the user a clarifying question
 
 IMPORTANT RULES:
+- Read both the Conversation History AND current user message.
 - A message can contain MULTIPLE transactions (e.g. "Ali took milk 150, Sara paid her tab"). Break each into separate tasks.
 - For ANY transaction on an existing customer, you must first find_customer, then update_ledger.
-- For NEW customer creation (e.g. "Create customer Kamran", "Yes create account for Kamran", "Add customer Tariq", "Create new customer"):
+- For NEW customer creation (e.g. "Create customer Kamran", "Yes create account for Kamran", "Add customer Tariq"):
   1. Use task type "create_customer" with args: { "name": "Kamran" }.
   2. If there is also a transaction for the new customer, add an update_ledger task that dependsOn the create_customer task.
+- For DELETING / REMOVING a customer from the system (e.g. "ahmed ka record delete krdo", "remove krna hai", "system se remove krna hai", "delete customer"):
+  1. Look up the customer name from the current message OR previous conversation context (e.g. "Ahmed").
+  2. Create a task "find_customer" with args: { "name": "Ahmed" }.
+  3. Create a task "delete_customer" that dependsOn the find_customer task.
 - For "paid off" / "cleared" / "settled" phrasing, set amount to "FULL_BALANCE" — the executor will look up the actual balance.
 - For queries like "who owes me money?" or "show overdue", use get_overdue_customers.
-- If the message is unclear (no amount, no customer), create a clarify task.
-- Each update_ledger task must depend on a preceding find_customer OR create_customer task.
+- If the message is completely unclear and cannot be inferred from context, create a clarify task.
+- Each update_ledger OR delete_customer task must depend on a preceding find_customer OR create_customer task.
 
 Respond with ONLY valid JSON in this exact format:
 {
@@ -105,15 +115,15 @@ Respond with ONLY valid JSON in this exact format:
     {
       "id": 1,
       "type": "find_customer",
-      "args": { "name": "Ali" },
-      "description": "Look up Ali"
+      "args": { "name": "Ahmed" },
+      "description": "Look up Ahmed"
     },
     {
       "id": 2,
-      "type": "update_ledger",
+      "type": "delete_customer",
       "dependsOn": 1,
-      "args": { "type": "charge", "amount": 150, "description": "milk" },
-      "description": "Charge Ali 150 for milk"
+      "args": {},
+      "description": "Delete Ahmed from the system"
     }
   ]
 }
@@ -133,12 +143,10 @@ Respond with ONLY the JSON plan:`;
 
   let plan: Plan;
   try {
-    // Extract JSON from potential markdown code blocks
     const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
     const jsonStr = jsonMatch ? jsonMatch[1].trim() : content.trim();
     plan = JSON.parse(jsonStr);
   } catch {
-    // If parsing fails, create a clarify task
     plan = {
       reasoning: "Could not parse the message into specific tasks",
       tasks: [
@@ -147,7 +155,7 @@ Respond with ONLY the JSON plan:`;
           type: "clarify",
           args: {
             question:
-              "I didn't quite understand that. Could you tell me the customer name and what happened (e.g., 'Ali took milk 150' or 'Sara paid 500')?",
+              "I didn't quite understand that. Could you specify the customer name and what you would like me to update?",
           },
           description: "Ask for clarification",
         },
@@ -234,7 +242,6 @@ async function executorNode(
     }
 
     case "update_ledger": {
-      // Resolve customer from dependency
       const depId = task.dependsOn;
       const customer = depId ? resolvedCustomers[String(depId)] : null;
 
@@ -250,7 +257,6 @@ async function executorNode(
         break;
       }
 
-      // Handle FULL_BALANCE amount (for "paid off" / "cleared" phrasing)
       let amount = Number(task.args.amount);
       if (
         task.args.amount === "FULL_BALANCE" ||
@@ -309,6 +315,31 @@ async function executorNode(
       break;
     }
 
+    case "delete_customer": {
+      const depId = task.dependsOn;
+      const customer = depId ? resolvedCustomers[String(depId)] : null;
+
+      if (!customer) {
+        result = {
+          taskId: task.id,
+          toolName: "delete_customer",
+          result: {
+            status: "error",
+            error: "Could not resolve customer to delete",
+          } as DeleteCustomerResult,
+        };
+        break;
+      }
+
+      const delResult: DeleteCustomerResult = await deleteCustomer(customer.id);
+      result = {
+        taskId: task.id,
+        toolName: "delete_customer",
+        result: delResult,
+      };
+      break;
+    }
+
     default: {
       result = {
         taskId: task.id,
@@ -335,16 +366,14 @@ async function executorNode(
 async function responderNode(
   state: AgentStateType
 ): Promise<Partial<AgentStateType>> {
-  // If there's a pending clarification, return that directly
   if (state.pendingClarification) {
     return { response: state.pendingClarification };
   }
 
-  // If no completed results, provide a generic response
   if (!state.completedResults || state.completedResults.length === 0) {
     return {
       response:
-        "I'm not sure what you'd like me to do. You can tell me things like 'Ali took milk 150' or 'who owes me money?' and I'll handle it.",
+        "I'm not sure what you'd like me to do. You can tell me things like 'Ali took milk 150', 'remove Ahmed from system', or 'who owes me money?' and I'll handle it.",
     };
   }
 
@@ -352,7 +381,7 @@ async function responderNode(
 
   const responderPrompt = `${SYSTEM_PROMPT}
 
-You are the RESPONDER. Summarize what was done back to the shopkeeper in plain, friendly language.
+You are the RESPONDER. Summarize what was done back to the shopkeeper in plain, friendly language (in English or Roman Urdu matching the user's style).
 
 The planner broke the message into tasks. Here are the results:
 
@@ -363,11 +392,10 @@ ${JSON.stringify(state.completedResults, null, 2)}
 
 RULES:
 - Confirm each transaction clearly (customer name, amount, type, new balance).
+- For delete_customer results, confirm that the customer and their records have been removed from the system.
 - Use Rs. for currency.
 - For overdue customer queries, list them clearly with their balances and how many days overdue.
-- Keep it concise and conversational — this is a shopkeeper, not a bank executive.
-- If any errors occurred, explain them simply.
-- Do NOT use markdown formatting — plain text only.
+- Keep it concise and conversational — plain text only.
 
 Write your response:`;
 
@@ -385,12 +413,10 @@ Write your response:`;
 // ============================================
 
 function shouldContinueExecuting(state: AgentStateType): string {
-  // If there's a pending clarification, go to responder
   if (state.pendingClarification) {
     return "responder";
   }
 
-  // If there are more tasks to execute, loop back to executor
   if (
     state.plan &&
     state.plan.tasks &&
@@ -399,7 +425,6 @@ function shouldContinueExecuting(state: AgentStateType): string {
     return "executor";
   }
 
-  // All tasks done, go to responder
   return "responder";
 }
 
@@ -447,7 +472,6 @@ export async function runAgent(
   const agentResponse =
     result.response || "Something went wrong. Please try again.";
 
-  // Build updated conversation history
   const updatedHistory: ChatMessage[] = [
     ...conversationHistory,
     { role: "user", content: userMessage },
