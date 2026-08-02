@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { ChatPanel } from "@/components/chat-panel";
 import { LedgerPanel } from "@/components/ledger-panel";
-import { Sun, Moon } from "lucide-react";
+import { LandingView } from "@/components/landing-view";
+import { Sun, Moon, Terminal, ArrowLeft } from "lucide-react";
 import type { Customer } from "@/lib/types";
 
 export default function Home() {
+  const [view, setView] = useState<"landing" | "app">("landing");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -51,13 +53,16 @@ export default function Home() {
       <header className="flex items-center justify-between px-5 h-12 border-b border-border/80 bg-background shrink-0 select-none">
         {/* Left Branding */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
+          <button
+            onClick={() => setView("landing")}
+            className="flex items-center gap-2 text-left hover:opacity-80 transition-opacity cursor-pointer"
+          >
             <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] inline-block shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
             <h1 className="text-xs font-bold tracking-[0.2em] uppercase text-foreground">
               KHATA ASSISTANT
             </h1>
-          </div>
-          <span className="text-[10px] text-muted-foreground/60 tracking-[0.2em] uppercase ml-2">
+          </button>
+          <span className="text-[10px] text-muted-foreground/60 tracking-[0.2em] uppercase ml-2 hidden sm:inline">
             TERM // ACTIVE
           </span>
           <button
@@ -73,51 +78,73 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Right Stats Summary */}
-        <div className="flex items-center gap-8 text-right">
-          <div>
-            <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
-              TOTAL OUTSTANDING
-            </span>
-            <span className="text-xs font-bold tracking-wide font-mono text-foreground">
-              Rs {totalOutstanding.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-          </div>
+        {/* Center / Right Header Navigation & Stats */}
+        <div className="flex items-center gap-6">
+          {view === "app" ? (
+            <>
+              {/* Stats Summary (App View) */}
+              <div className="hidden md:flex items-center gap-6 text-right">
+                <div>
+                  <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
+                    OUTSTANDING
+                  </span>
+                  <span className="text-xs font-bold tracking-wide font-mono text-foreground">
+                    Rs {totalOutstanding.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
 
-          <div>
-            <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
-              OVERDUE COUNT
-            </span>
-            <span className="text-xs font-bold tracking-wide font-mono text-[#EF4444]">
-              {String(overdueCount).padStart(2, "0")}
-            </span>
-          </div>
+                <div>
+                  <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
+                    OVERDUE
+                  </span>
+                  <span className="text-xs font-bold tracking-wide font-mono text-[#EF4444]">
+                    {String(overdueCount).padStart(2, "0")}
+                  </span>
+                </div>
+              </div>
 
-          <div>
-            <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
-              TOTAL CUSTOMERS
-            </span>
-            <span className="text-xs font-bold tracking-wide font-mono text-foreground">
-              {customers.length}
-            </span>
-          </div>
+              <button
+                onClick={() => setView("landing")}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-border/80 hover:bg-muted/30 text-[10px] font-bold tracking-widest text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                <span>LANDING</span>
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setView("app")}
+              className="flex items-center gap-2 px-3 py-1 rounded bg-[#10B981] hover:bg-[#059669] text-[#141312] text-[10px] font-bold tracking-widest uppercase transition-colors cursor-pointer shadow-sm shadow-[#10B981]/20"
+            >
+              <Terminal className="w-3.5 h-3.5" />
+              <span>LAUNCH AGENT</span>
+            </button>
+          )}
         </div>
       </header>
 
-      {/* Two-Panel Terminal View */}
+      {/* View Switcher */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel: Terminal Chat */}
-        <div className="w-full lg:w-5/12 border-r border-border/80 flex flex-col overflow-hidden bg-background">
-          <ChatPanel onLedgerUpdate={handleLedgerUpdate} />
-        </div>
+        {view === "landing" ? (
+          <div className="w-full overflow-y-auto">
+            <LandingView onGetStarted={() => setView("app")} />
+          </div>
+        ) : (
+          <>
+            {/* Left Panel: Terminal Chat */}
+            <div className="w-full lg:w-5/12 border-r border-border/80 flex flex-col overflow-hidden bg-background">
+              <ChatPanel onLedgerUpdate={handleLedgerUpdate} />
+            </div>
 
-        {/* Right Panel: Terminal Ledger Table */}
-        <div className="hidden lg:flex lg:w-7/12 flex-col overflow-hidden bg-background">
-          <LedgerPanel
-            refreshTrigger={refreshTrigger}
-            onCustomersLoaded={handleCustomersLoaded}
-          />
-        </div>
+            {/* Right Panel: Terminal Ledger Table */}
+            <div className="hidden lg:flex lg:w-7/12 flex-col overflow-hidden bg-background">
+              <LedgerPanel
+                refreshTrigger={refreshTrigger}
+                onCustomersLoaded={handleCustomersLoaded}
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

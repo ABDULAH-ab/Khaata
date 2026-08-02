@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -23,6 +23,10 @@ export function LedgerPanel({
 }: LedgerPanelProps) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const onCustomersLoadedRef = useRef(onCustomersLoaded);
+  useEffect(() => {
+    onCustomersLoadedRef.current = onCustomersLoaded;
+  }, [onCustomersLoaded]);
 
   const fetchLedger = useCallback(async () => {
     try {
@@ -30,14 +34,14 @@ export function LedgerPanel({
       const data = await res.json();
       if (data.customers) {
         setCustomers(data.customers);
-        onCustomersLoaded?.(data.customers);
+        onCustomersLoadedRef.current?.(data.customers);
       }
     } catch (error) {
       console.error("Failed to fetch ledger:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [onCustomersLoaded]);
+  }, []);
 
   useEffect(() => {
     fetchLedger();
