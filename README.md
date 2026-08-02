@@ -8,7 +8,7 @@ A LangGraph-powered AI agent that converts natural-language shop talk into struc
 
 ## Problem
 
-Small shopkeepers across South Asia track credit in physical notebooks. Customers buy on tab and pay later. Notebooks get lost, names get mixed up, and there's no way to quickly check who's overdue. Shopkeepers speak naturally — "Ali took milk 150, Sara paid her tab" — but digital tools force structured forms and menus.
+Small shopkeepers across Pakistan track credit in physical notebooks. Customers buy on tab and pay later. Notebooks get lost, names get mixed up, and there's no way to quickly check who's overdue. Shopkeepers speak naturally — "Ali took milk 150, Sara paid her tab" — but digital tools force structured forms and menus.
 
 ## Solution
 
