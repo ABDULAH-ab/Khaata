@@ -50,7 +50,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-foreground font-mono transition-colors duration-150">
       {/* Top Terminal Header Bar */}
-      <header className="flex items-center justify-between px-5 h-12 border-b border-border/80 bg-background shrink-0 select-none">
+      <header className="flex items-center justify-between px-5 h-12 border-b border-border/80 bg-background shrink-0">
         {/* Left Branding */}
         <div className="flex items-center gap-3">
           <button

@@ -98,7 +98,7 @@ export function LedgerPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background font-mono select-none border-l border-border/40">
+    <div className="flex flex-col h-full bg-background font-mono border-l border-border/40">
       <div className="flex-1 overflow-y-auto min-h-0">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">

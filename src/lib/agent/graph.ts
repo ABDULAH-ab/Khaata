@@ -89,11 +89,14 @@ Available tools:
 
 IMPORTANT RULES:
 - A message can contain MULTIPLE transactions (e.g. "Ali took milk 150, Sara paid her tab"). Break each into separate tasks.
-- For ANY transaction, you must first find_customer, then update_ledger.
+- For ANY transaction on an existing customer, you must first find_customer, then update_ledger.
+- For NEW customer creation (e.g. "Create customer Kamran", "Yes create account for Kamran", "Add customer Tariq", "Create new customer"):
+  1. Use task type "create_customer" with args: { "name": "Kamran" }.
+  2. If there is also a transaction for the new customer, add an update_ledger task that dependsOn the create_customer task.
 - For "paid off" / "cleared" / "settled" phrasing, set amount to "FULL_BALANCE" — the executor will look up the actual balance.
 - For queries like "who owes me money?" or "show overdue", use get_overdue_customers.
 - If the message is unclear (no amount, no customer), create a clarify task.
-- Each update_ledger task must depend on a preceding find_customer task.
+- Each update_ledger task must depend on a preceding find_customer OR create_customer task.
 
 Respond with ONLY valid JSON in this exact format:
 {

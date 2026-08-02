@@ -80,7 +80,7 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background font-mono select-none">
+    <div className="flex flex-col h-full bg-background font-mono">
       {/* Welcome Notification Box (Exact Lovable Screenshot) */}
       <div className="p-4 border-b border-border/40">
         <div className="p-3.5 rounded-lg border border-border bg-card/60 flex items-start gap-3">
