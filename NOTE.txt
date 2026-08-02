@@ -16,7 +16,7 @@ WHAT IT DOES
 - Bilingual (English + Roman Urdu), dark/light theme, deployed on Vercel.
 
 HOW LONG IT TOOK
-~26 hours over 2 days (Aug 1–2, 2026). 20 commits, ~2,340 lines of code.
+- 2 days (I started the task on weekend).
 
 WHAT I WOULD BUILD NEXT
 - Auth and multi-tenancy so each shopkeeper gets their own ledger.
