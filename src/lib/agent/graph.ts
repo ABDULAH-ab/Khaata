@@ -109,7 +109,10 @@ IMPORTANT RULES:
   1. Look up the customer name from the current message OR previous conversation context (e.g. "Ahmed").
   2. Create a task "find_customer" with args: { "name": "Ahmed" }.
   3. Create a task "delete_customer" that dependsOn the find_customer task.
-- For "paid off" / "cleared" / "settled" phrasing, set amount to "FULL_BALANCE" — the executor will look up the actual balance.
+- For "paid off" / "cleared" / "settled" / "0 krdo" / "zero krdo" / "clear krdo" / "set to zero" phrasing:
+  1. Identify customer name from current message or previous conversation context (e.g. "Abdullah").
+  2. Create task "find_customer" with args: { "name": "Abdullah" }.
+  3. Create task "update_ledger" with args: { "type": "settle", "amount": "SET_TO_ZERO", "description": "Balance cleared to zero" }.
 - For QUESTIONS or EXPLANATIONS about a customer's balance or status (e.g. "how is it settled?", "what is Abdullah's balance?", "why does it show negative?", "explain Abdullah's record"):
   1. Look up the customer name from the current message OR previous conversation context (e.g. "Abdullah").
   2. Create a task "find_customer" with args: { "name": "Abdullah" }.
@@ -266,30 +269,44 @@ async function executorNode(
         break;
       }
 
+      let type = (task.args.type as "charge" | "payment") || "payment";
       let amount = Number(task.args.amount);
-      if (
+      const currentBal = Number(customer.balance);
+
+      const isZeroRequest =
         task.args.amount === "FULL_BALANCE" ||
-        task.args.amount === "full_balance"
-      ) {
-        amount = Number(customer.balance);
-        if (amount <= 0) {
+        task.args.amount === "full_balance" ||
+        task.args.amount === "SET_TO_ZERO" ||
+        task.args.amount === "set_to_zero" ||
+        task.args.type === "settle";
+
+      if (isZeroRequest) {
+        if (currentBal === 0) {
           result = {
             taskId: task.id,
             toolName: "update_ledger",
             result: {
-              status: "error",
-              error: `${customer.name}'s balance is already ${customer.balance}. There's nothing to pay off.`,
+              status: "success",
+              newBalance: 0,
+              customerName: customer.name,
             } as UpdateLedgerResult,
           };
           break;
+        } else if (currentBal > 0) {
+          type = "payment";
+          amount = currentBal;
+        } else {
+          // Negative balance (e.g. -350): charge Math.abs(currentBal) to bring balance to 0
+          type = "charge";
+          amount = Math.abs(currentBal);
         }
       }
 
       const ledgerResult: UpdateLedgerResult = await updateLedger(
         customer.id,
-        task.args.type as "charge" | "payment",
+        type,
         amount,
-        (task.args.description as string) || "",
+        (task.args.description as string) || (isZeroRequest ? "Balance cleared to zero" : ""),
         state.userMessage
       );
 
