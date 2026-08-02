@@ -1,0 +1,27 @@
+KHATA ASSISTANT — SHORT NOTE
+
+PROBLEM
+Small shopkeepers track credit (khata) in physical notebooks. Entries get lost, names get mixed up, and there's no way to check who's overdue. They speak naturally — "Ali took milk 150" — but digital tools force structured forms.
+
+HOW THE HARNESS IS DESIGNED
+A 3-node LangGraph StateGraph pipeline:
+  1. Planner — LLM decomposes natural language into a JSON task list with dependencies.
+  2. Executor — Loops through tasks, calling Supabase tools (find_customer, update_ledger, create_customer, delete_customer, get_overdue_customers, clarify). Handles fuzzy name matching and ambiguity detection.
+  3. Responder — LLM summarizes results back in plain language, matching the user's language (English or Roman Urdu).
+
+WHAT IT DOES
+- Converts shop talk into structured ledger transactions stored in Supabase PostgreSQL.
+- Handles multi-transaction messages, name disambiguation, overpayments, balance clearing, and customer CRUD.
+- Split-panel UI: chat terminal on left, live ledger table on right with real-time balance updates.
+- Bilingual (English + Roman Urdu), dark/light theme, deployed on Vercel.
+
+HOW LONG IT TOOK
+~26 hours over 2 days (Aug 1–2, 2026). 20 commits, ~2,340 lines of code.
+
+WHAT I WOULD BUILD NEXT
+- Auth and multi-tenancy so each shopkeeper gets their own ledger.
+- Voice input via Web Speech API.
+- WhatsApp bot using the same LangGraph harness.
+- Per-customer transaction history view.
+- Daily overdue alerts via cron jobs.
+- Offline support with sync.
