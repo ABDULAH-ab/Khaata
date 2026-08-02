@@ -73,7 +73,7 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -148,11 +148,8 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
           />
 
           <div className="flex items-center justify-between pt-2 border-t border-border/30">
-            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground/60 font-mono tracking-widest uppercase">
-              <span className="w-3.5 h-3.5 rounded bg-muted/60 flex items-center justify-center text-[8px] font-bold">
-                ⌘
-              </span>
-              <span>ENTER</span>
+            <div className="flex items-center gap-1 text-[9px] text-muted-foreground/60 font-mono tracking-widest uppercase">
+              <span>ENTER TO SEND</span>
             </div>
 
             <button
