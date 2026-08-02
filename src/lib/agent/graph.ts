@@ -104,6 +104,9 @@ IMPORTANT RULES:
   2. Create a task "find_customer" with args: { "name": "Ahmed" }.
   3. Create a task "delete_customer" that dependsOn the find_customer task.
 - For "paid off" / "cleared" / "settled" phrasing, set amount to "FULL_BALANCE" — the executor will look up the actual balance.
+- For QUESTIONS or EXPLANATIONS about a customer's balance or status (e.g. "how is it settled?", "what is Abdullah's balance?", "why does it show negative?", "explain Abdullah's record"):
+  1. Look up the customer name from the current message OR previous conversation context (e.g. "Abdullah").
+  2. Create a task "find_customer" with args: { "name": "Abdullah" }.
 - For queries like "who owes me money?" or "show overdue", use get_overdue_customers.
 - If the message is completely unclear and cannot be inferred from context, create a clarify task.
 - Each update_ledger OR delete_customer task must depend on a preceding find_customer OR create_customer task.

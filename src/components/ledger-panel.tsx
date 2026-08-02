@@ -175,9 +175,13 @@ export function LedgerPanel({
                         >
                           Rs {balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
-                      ) : (
+                      ) : balance === 0 ? (
                         <span className="text-xs font-bold text-[#10B981] tracking-wide">
                           Settled
+                        </span>
+                      ) : (
+                        <span className="text-xs font-bold text-[#06B6D4] dark:text-[#38BDF8] tracking-wide tabular-nums">
+                          Credit Rs {Math.abs(balance).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       )}
                     </TableCell>
@@ -192,9 +196,13 @@ export function LedgerPanel({
                         <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-border/80 text-muted-foreground/80 bg-muted/20">
                           ACTIVE
                         </span>
-                      ) : (
+                      ) : balance === 0 ? (
                         <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-[#10B981]/40 text-[#10B981] bg-[#10B981]/10">
                           PAID
+                        </span>
+                      ) : (
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-[#06B6D4]/40 text-[#06B6D4] dark:text-[#38BDF8] bg-[#06B6D4]/10">
+                          CREDIT
                         </span>
                       )}
                     </TableCell>
