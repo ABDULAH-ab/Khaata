@@ -1,4 +1,4 @@
-# Khata Assistant
+# Khaata
 
 A LangGraph-powered AI agent that converts natural-language shop talk into structured ledger transactions — built for small shopkeepers who run their businesses on credit (khata).
 
