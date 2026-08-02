@@ -1,14 +1,11 @@
 "use client";
 
-import { ArrowRight, Bot, ShieldCheck, Zap, Sparkles, CheckCircle2, Clock } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Bot, ShieldCheck, Zap } from "lucide-react";
 
-interface LandingViewProps {
-  onGetStarted: () => void;
-}
-
-export function LandingView({ onGetStarted }: LandingViewProps) {
+export function LandingView() {
   return (
-    <div className="flex flex-col items-center justify-between min-h-[calc(100vh-3rem)] px-6 py-12 bg-background text-foreground font-mono select-none">
+    <div className="flex flex-col items-center justify-between min-h-[calc(100vh-3rem)] px-6 py-12 bg-background text-foreground font-mono">
       {/* Background Subtle Grid Accent */}
       <div className="absolute inset-0 bg-[radial-gradient(#282624_1px,transparent_1px)] [background-size:24px_24px] opacity-30 pointer-events-none" />
 
@@ -33,14 +30,14 @@ export function LandingView({ onGetStarted }: LandingViewProps) {
 
         {/* Get Started Button */}
         <div className="pt-2">
-          <button
-            onClick={onGetStarted}
+          <Link
+            href="/chat"
             className="group relative inline-flex items-center gap-3 px-8 py-3.5 rounded-lg bg-[#10B981] hover:bg-[#059669] text-[#141312] font-bold text-xs uppercase tracking-[0.2em] transition-all duration-200 shadow-lg shadow-[#10B981]/20 hover:shadow-[#10B981]/40 cursor-pointer"
             id="get-started-button"
           >
             <span>GET STARTED</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
         </div>
 
         {/* 3 Core Capability Cards */}
