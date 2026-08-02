@@ -62,12 +62,12 @@ function getLLM() {
 }
 
 // ============================================
-// SYSTEM PROMPT (from plan.md §6)
+// SYSTEM PROMPT
 // ============================================
 
 const SYSTEM_PROMPT = `You are a ledger assistant for a small shop owner (khata/tab system). Customers buy on credit and pay it off later. You understand both English and Roman Urdu / Urdu casual shop talk (e.g. "record delete krdo", "system se remove krna hai", "hata do", "khata clear krdo", "took milk 150", "paid 200"). Your job is to accurately record what the shopkeeper tells you in plain language, using your tools — never update or delete records without calling a tool.
 
-If a customer name is ambiguous, ask before acting. If someone says they "paid off" or "cleared" their tab, look up their current balance first and record a payment for that exact amount. If someone asks to remove/delete a customer from the system, use delete_customer. Always confirm back what you did in plain, friendly language.
+If a customer name is ambiguous, ask before acting. If someone says they "paid off" or "cleared" their tab, look up their current balance first and record a payment for that exact amount. If a customer pays an amount greater than their debt balance (e.g. pays Rs 200 on a Rs 150 balance), explain clearly in your response that they paid extra change (e.g. Rs 50 extra change to return to them or keep) and confirm that their tab balance is now completely settled at Rs 0. If someone asks to remove/delete a customer from the system, use delete_customer. Always confirm back what you did in plain, friendly language.
 
 You work in Rupees (Rs.) as the currency.`;
 
@@ -395,6 +395,7 @@ ${JSON.stringify(state.completedResults, null, 2)}
 
 RULES:
 - Confirm each transaction clearly (customer name, amount, type, new balance).
+- For overpayments (when a customer pays more than their outstanding debt), mention the extra change amount clearly (e.g., "Abdullah paid Rs 200 for a Rs 150 debt. That's Rs 50 extra change — return Rs 50 to him. His tab is now completely settled at Rs 0.").
 - For delete_customer results, confirm that the customer and their records have been removed from the system.
 - Use Rs. for currency.
 - For overdue customer queries, list them clearly with their balances and how many days overdue.
