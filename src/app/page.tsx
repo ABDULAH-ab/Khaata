@@ -12,7 +12,6 @@ export default function Home() {
   const [customers, setCustomers] = useState<Customer[]>([]);
 
   useEffect(() => {
-    // Apply dark class to html element
     const root = document.documentElement;
     if (theme === "dark") {
       root.classList.add("dark");
@@ -29,7 +28,6 @@ export default function Home() {
     setCustomers(data);
   };
 
-  // Calculate totals for top header
   const totalOutstanding = customers.reduce(
     (sum, c) => sum + Math.max(0, Number(c.balance)),
     0
@@ -48,72 +46,72 @@ export default function Home() {
   const overdueCount = customers.filter(isOverdue).length;
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-foreground font-mono transition-colors duration-200">
-      {/* Header Bar */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-border/40 bg-background shrink-0 select-none">
-        {/* Left Title */}
-        <div className="flex items-center gap-4">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-background text-foreground font-mono transition-colors duration-150">
+      {/* Top Terminal Header Bar */}
+      <header className="flex items-center justify-between px-5 h-12 border-b border-border/80 bg-background shrink-0 select-none">
+        {/* Left Branding */}
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-            <h1 className="text-xs font-bold tracking-widest uppercase text-foreground">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] inline-block shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            <h1 className="text-xs font-bold tracking-[0.2em] uppercase text-foreground">
               KHATA ASSISTANT
             </h1>
           </div>
-          <span className="text-[10px] text-muted-foreground/70 tracking-widest uppercase">
+          <span className="text-[10px] text-muted-foreground/60 tracking-[0.2em] uppercase ml-2">
             TERM // ACTIVE
           </span>
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="w-7 h-7 rounded border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors ml-2"
+            className="w-6 h-6 rounded border border-border/70 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors ml-2 cursor-pointer"
             title="Toggle Light/Dark Theme"
           >
             {theme === "dark" ? (
-              <Sun className="w-3.5 h-3.5" />
+              <Sun className="w-3 h-3" />
             ) : (
-              <Moon className="w-3.5 h-3.5" />
+              <Moon className="w-3 h-3" />
             )}
           </button>
         </div>
 
-        {/* Right Header Stats */}
-        <div className="flex items-center gap-8 text-left">
+        {/* Right Stats Summary */}
+        <div className="flex items-center gap-8 text-right">
           <div>
-            <p className="text-[9px] text-muted-foreground/70 tracking-widest uppercase font-mono">
+            <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
               TOTAL OUTSTANDING
-            </p>
-            <p className="text-sm font-bold text-foreground tabular-nums tracking-wide">
+            </span>
+            <span className="text-xs font-bold tracking-wide font-mono text-foreground">
               Rs {totalOutstanding.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
+            </span>
           </div>
 
           <div>
-            <p className="text-[9px] text-muted-foreground/70 tracking-widest uppercase font-mono">
+            <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
               OVERDUE COUNT
-            </p>
-            <p className="text-sm font-bold text-rose-500 tabular-nums tracking-wide">
+            </span>
+            <span className="text-xs font-bold tracking-wide font-mono text-[#EF4444]">
               {String(overdueCount).padStart(2, "0")}
-            </p>
+            </span>
           </div>
 
           <div>
-            <p className="text-[9px] text-muted-foreground/70 tracking-widest uppercase font-mono">
+            <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase block font-mono">
               TOTAL CUSTOMERS
-            </p>
-            <p className="text-sm font-bold text-foreground tabular-nums tracking-wide">
+            </span>
+            <span className="text-xs font-bold tracking-wide font-mono text-foreground">
               {customers.length}
-            </p>
+            </span>
           </div>
         </div>
       </header>
 
-      {/* Two Panel Layout */}
+      {/* Two-Panel Terminal View */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel: Chat Terminal */}
-        <div className="w-full lg:w-5/12 border-r border-border/40 flex flex-col overflow-hidden bg-background">
+        {/* Left Panel: Terminal Chat */}
+        <div className="w-full lg:w-5/12 border-r border-border/80 flex flex-col overflow-hidden bg-background">
           <ChatPanel onLedgerUpdate={handleLedgerUpdate} />
         </div>
 
-        {/* Right Panel: Ledger Table */}
+        {/* Right Panel: Terminal Ledger Table */}
         <div className="hidden lg:flex lg:w-7/12 flex-col overflow-hidden bg-background">
           <LedgerPanel
             refreshTrigger={refreshTrigger}

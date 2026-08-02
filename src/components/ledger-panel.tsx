@@ -82,7 +82,6 @@ export function LedgerPanel({
     return `${day}-${month}-${year}`;
   };
 
-  // Generate short ID tag from customer UUID or name e.g. 104-AK
   const getCustomerCode = (customer: Customer, idx: number): string => {
     const initials = customer.name
       .split(" ")
@@ -95,12 +94,12 @@ export function LedgerPanel({
   };
 
   return (
-    <div className="flex flex-col h-full bg-background font-mono select-none">
+    <div className="flex flex-col h-full bg-background font-mono select-none border-l border-border/40">
       <ScrollArea className="flex-1">
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <span className="text-xs text-muted-foreground animate-pulse">
-              LOADING LEDGER DATA...
+              LOADING LEDGER...
             </span>
           </div>
         ) : customers.length === 0 ? (
@@ -111,21 +110,21 @@ export function LedgerPanel({
           </div>
         ) : (
           <Table>
-            <TableHeader className="bg-background sticky top-0 z-10 border-b border-border/40">
-              <TableRow className="border-border/30 hover:bg-transparent">
-                <TableHead className="text-[9px] font-bold tracking-widest text-muted-foreground/80 uppercase font-mono py-3">
+            <TableHeader className="bg-background sticky top-0 z-10 border-b border-border/60">
+              <TableRow className="border-border/40 hover:bg-transparent">
+                <TableHead className="text-[9px] font-normal tracking-[0.2em] text-muted-foreground/70 uppercase font-mono py-3 pl-6">
                   CUSTOMER NAME
                 </TableHead>
 
-                <TableHead className="text-[9px] font-bold tracking-widest text-muted-foreground/80 uppercase font-mono py-3">
+                <TableHead className="text-[9px] font-normal tracking-[0.2em] text-muted-foreground/70 uppercase font-mono py-3">
                   LAST ACTIVITY
                 </TableHead>
 
-                <TableHead className="text-[9px] font-bold tracking-widest text-muted-foreground/80 uppercase font-mono py-3 text-right">
+                <TableHead className="text-[9px] font-normal tracking-[0.2em] text-muted-foreground/70 uppercase font-mono py-3 text-right">
                   BALANCE
                 </TableHead>
 
-                <TableHead className="text-[9px] font-bold tracking-widest text-muted-foreground/80 uppercase font-mono py-3 text-right pr-6">
+                <TableHead className="text-[9px] font-normal tracking-[0.2em] text-muted-foreground/70 uppercase font-mono py-3 text-right pr-6">
                   STATUS
                 </TableHead>
               </TableRow>
@@ -141,10 +140,10 @@ export function LedgerPanel({
                 return (
                   <TableRow
                     key={customer.id}
-                    className="border-b border-border/20 hover:bg-muted/20 transition-colors"
+                    className="border-b border-border/30 hover:bg-muted/10 transition-colors"
                   >
                     {/* Customer Name & Subtitle ID */}
-                    <TableCell className="py-3 font-mono">
+                    <TableCell className="py-3.5 pl-6 font-mono">
                       <div>
                         <p className="text-xs font-bold text-foreground tracking-tight">
                           {customer.name}
@@ -156,41 +155,41 @@ export function LedgerPanel({
                     </TableCell>
 
                     {/* Last Activity */}
-                    <TableCell className="py-3 text-xs text-muted-foreground/80 font-mono">
+                    <TableCell className="py-3.5 text-xs text-muted-foreground/80 font-mono">
                       {formatActivityDate(customer.last_transaction_at)}
                     </TableCell>
 
                     {/* Balance */}
-                    <TableCell className="py-3 text-right font-mono">
+                    <TableCell className="py-3.5 text-right font-mono">
                       {balance > 0 ? (
                         <span
                           className={`text-xs font-bold tabular-nums tracking-wide ${
                             overdue
-                              ? "text-rose-500"
-                              : "text-amber-500 dark:text-amber-400"
+                              ? "text-[#EF4444]"
+                              : "text-[#F59E0B] dark:text-[#EAB308]"
                           }`}
                         >
                           Rs {balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       ) : (
-                        <span className="text-xs font-bold text-emerald-500 tracking-wide">
+                        <span className="text-xs font-bold text-[#10B981] tracking-wide">
                           Settled
                         </span>
                       )}
                     </TableCell>
 
                     {/* Status Badge */}
-                    <TableCell className="py-3 text-right pr-6 font-mono">
+                    <TableCell className="py-3.5 text-right pr-6 font-mono">
                       {overdue ? (
-                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-rose-500/40 text-rose-500 bg-rose-500/10">
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-[#EF4444]/40 text-[#EF4444] bg-[#EF4444]/10">
                           OVERDUE {daysOverdue}D
                         </span>
                       ) : balance > 0 ? (
-                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-border/60 text-muted-foreground/80 bg-muted/20">
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-border/80 text-muted-foreground/80 bg-muted/20">
                           ACTIVE
                         </span>
                       ) : (
-                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-emerald-500/40 text-emerald-500 bg-emerald-500/10">
+                        <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase border border-[#10B981]/40 text-[#10B981] bg-[#10B981]/10">
                           PAID
                         </span>
                       )}

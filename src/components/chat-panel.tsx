@@ -80,19 +80,19 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background font-mono border-r border-border/40">
-      {/* Top Banner Notice (matching Lovable screenshot) */}
-      <div className="p-4 border-b border-border/30 bg-muted/20">
-        <div className="flex items-start gap-3">
-          <span className="w-2.5 h-2.5 rounded shadow-xs bg-emerald-500 shrink-0 mt-1" />
-          <p className="text-xs text-foreground/90 leading-relaxed font-mono">
+    <div className="flex flex-col h-full bg-background font-mono select-none">
+      {/* Welcome Notification Box (Exact Lovable Screenshot) */}
+      <div className="p-4 border-b border-border/40">
+        <div className="p-3.5 rounded-lg border border-border bg-card/60 flex items-start gap-3">
+          <span className="w-2.5 h-2.5 rounded-sm bg-[#10B981] shrink-0 mt-0.5 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
+          <p className="text-xs text-foreground/90 font-mono leading-relaxed tracking-wide">
             Ready. Tell me what happened at the counter — e.g. &quot;Ali took milk 150, Sara paid her tab&quot;.
           </p>
         </div>
       </div>
 
-      {/* Messages List */}
-      <ScrollArea className="flex-1 px-4 py-4">
+      {/* Messages Stream */}
+      <ScrollArea className="flex-1 px-4 py-3">
         <div ref={scrollRef} className="space-y-4">
           {messages.map((msg, i) => (
             <div
@@ -101,14 +101,14 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
                 msg.role === "user" ? "items-end" : "items-start"
               }`}
             >
-              <span className="text-[9px] text-muted-foreground/60 uppercase tracking-widest mb-1 px-1">
+              <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase mb-1 px-1 font-mono">
                 {msg.role === "user" ? "SHOPKEEPER" : "KHATA AGENT"}
               </span>
               <div
-                className={`max-w-[90%] px-3.5 py-2.5 rounded border text-xs leading-relaxed font-mono ${
+                className={`max-w-[92%] px-3.5 py-2.5 rounded-md border text-xs leading-relaxed font-mono ${
                   msg.role === "user"
-                    ? "bg-muted/40 border-border/60 text-foreground"
-                    : "bg-emerald-500/10 border-emerald-500/30 text-emerald-300 dark:text-emerald-400"
+                    ? "bg-card border-border text-foreground"
+                    : "bg-[#10B981]/10 border-[#10B981]/30 text-[#10B981] dark:text-[#34D399]"
                 }`}
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
@@ -118,13 +118,13 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
 
           {isLoading && (
             <div className="flex flex-col items-start">
-              <span className="text-[9px] text-muted-foreground/60 uppercase tracking-widest mb-1 px-1">
+              <span className="text-[9px] text-muted-foreground/60 tracking-[0.2em] uppercase mb-1 px-1 font-mono">
                 KHATA AGENT
               </span>
-              <div className="px-3.5 py-2.5 rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-mono">
+              <div className="px-3.5 py-2.5 rounded-md border border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981] text-xs font-mono">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                  <span>Processing ledger update...</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-ping" />
+                  <span>EXECUTING WORKFLOW PLAN...</span>
                 </div>
               </div>
             </div>
@@ -132,9 +132,9 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
         </div>
       </ScrollArea>
 
-      {/* Bottom Terminal Input Area (matching Lovable screenshot) */}
+      {/* Bottom Terminal Input Box (Exact Lovable Screenshot) */}
       <div className="p-4 border-t border-border/40 bg-background">
-        <div className="rounded-lg border border-border/60 bg-muted/10 p-3 space-y-2 focus-within:border-border transition-colors">
+        <div className="rounded-lg border border-border bg-card p-3 space-y-2 focus-within:border-foreground/50 transition-colors">
           <textarea
             ref={inputRef}
             value={input}
@@ -147,14 +147,18 @@ export function ChatPanel({ onLedgerUpdate }: ChatPanelProps) {
             id="chat-input"
           />
 
-          <div className="flex items-center justify-between pt-1 border-t border-border/20">
-            <span className="text-[9px] text-muted-foreground/50 font-mono tracking-wider">
-              CMD + ENTER
-            </span>
+          <div className="flex items-center justify-between pt-2 border-t border-border/30">
+            <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground/60 font-mono tracking-widest uppercase">
+              <span className="w-3.5 h-3.5 rounded bg-muted/60 flex items-center justify-center text-[8px] font-bold">
+                ⌘
+              </span>
+              <span>ENTER</span>
+            </div>
+
             <button
               onClick={() => sendMessage()}
               disabled={!input.trim() || isLoading}
-              className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-[10px] font-bold text-white uppercase tracking-widest transition-colors cursor-pointer"
+              className="px-3 py-1 rounded bg-[#10B981] hover:bg-[#059669] disabled:opacity-40 text-[10px] font-bold text-[#141312] uppercase tracking-[0.15em] transition-colors cursor-pointer"
               id="send-button"
             >
               SUBMIT
