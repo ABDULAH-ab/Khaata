@@ -18,7 +18,6 @@ export async function findCustomer(name: string): Promise<FindCustomerResult> {
   }
 
   // Fetch all customers to do flexible matching
-  // (For a small shop with <100 customers, this is fine)
   const { data: customers, error } = await supabase
     .from("customers")
     .select("*");
@@ -38,49 +37,38 @@ export async function findCustomer(name: string): Promise<FindCustomerResult> {
       let score = 0;
 
       const customerNameLower = customer.name.toLowerCase();
+      const nameTokens = customerNameLower.split(/\s+/);
       const aliasesLower = (customer.aliases || []).map((a: string) =>
         a.toLowerCase()
       );
 
-      // Exact name match = highest score
+      // 1. Exact full name match
       if (customerNameLower === searchName) {
         score = 100;
       }
-      // Exact alias match
+      // 2. Exact alias match
       else if (aliasesLower.includes(searchName)) {
         score = 90;
       }
-      // Name starts with search term
+      // 3. First name token match (e.g., searching "Ali" matches "Ali Khan" AND "Ali Raza")
+      else if (nameTokens.some((t) => t === searchName)) {
+        score = 90;
+      }
+      // 4. Name starts with search term
       else if (customerNameLower.startsWith(searchName)) {
-        score = 70;
+        score = 80;
       }
-      // Search term starts with name (e.g. searching "Ali Khan" matches "Ali")
-      else if (searchName.startsWith(customerNameLower)) {
-        score = 60;
-      }
-      // Alias starts with search term
+      // 5. Alias starts with search term
       else if (aliasesLower.some((a: string) => a.startsWith(searchName))) {
-        score = 65;
+        score = 75;
       }
-      // Search term starts with alias
-      else if (aliasesLower.some((a: string) => searchName.startsWith(a))) {
-        score = 55;
+      // 6. Search term contains customer name or token
+      else if (nameTokens.some((t) => searchName.includes(t))) {
+        score = 50;
       }
-      // Name contains search term
+      // 7. Substring match
       else if (customerNameLower.includes(searchName)) {
         score = 40;
-      }
-      // Search term contains name
-      else if (searchName.includes(customerNameLower)) {
-        score = 35;
-      }
-      // Alias contains search term
-      else if (aliasesLower.some((a: string) => a.includes(searchName))) {
-        score = 30;
-      }
-      // Search term contains alias
-      else if (aliasesLower.some((a: string) => searchName.includes(a))) {
-        score = 25;
       }
 
       return { customer, score };
@@ -92,19 +80,26 @@ export async function findCustomer(name: string): Promise<FindCustomerResult> {
     return { status: "not_found", searchedName: name };
   }
 
-  // If the top score is much higher than the second, it's a clear match
-  if (scored.length === 1 || scored[0].score - scored[1].score >= 20) {
+  // If top score is 100 (exact full name match like "Ali Khan"), return immediately
+  if (scored[0].score === 100) {
     return {
       status: "found",
       customer: scored[0].customer,
     };
   }
 
-  // Multiple close matches → ambiguous
-  // Return all candidates with scores within 25 points of the top score
+  // If there's only 1 match or top score is significantly higher than second (> 15 diff)
+  if (scored.length === 1 || scored[0].score - scored[1].score > 15) {
+    return {
+      status: "found",
+      customer: scored[0].customer,
+    };
+  }
+
+  // Multiple plausible close matches → ambiguous!
   const topScore = scored[0].score;
   const candidates = scored
-    .filter((s) => topScore - s.score <= 25)
+    .filter((s) => topScore - s.score <= 15)
     .map((s) => s.customer);
 
   return {
