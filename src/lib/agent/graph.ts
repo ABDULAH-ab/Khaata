@@ -101,7 +101,8 @@ Available tools:
 IMPORTANT RULES:
 - Read both the Conversation History AND current user message.
 - A message can contain MULTIPLE transactions (e.g. "Ali took milk 150, Sara paid her tab"). Break each into separate tasks.
-- For ANY transaction on an existing customer, you must first find_customer, then update_ledger.
+- For ANY transaction (charge or payment) on a customer who might already exist, you MUST first find_customer, then update_ledger. NEVER use create_customer for payment/charge transactions!
+- create_customer is ONLY for when the user EXPLICITLY asks to create/add a new customer (e.g. "Create customer Kamran", "Add new customer Tariq"). Do NOT use it for recording payments or charges.
 - For NEW customer creation (e.g. "Create customer Kamran", "Yes create account for Kamran", "Add customer Tariq"):
   1. Use task type "create_customer" with args: { "name": "Kamran" }.
   2. If there is also a transaction for the new customer, add an update_ledger task that dependsOn the create_customer task.
